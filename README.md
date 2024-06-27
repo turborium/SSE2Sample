@@ -9,9 +9,9 @@ Also this is an example of outputting raw pixels using the WinApi StretchDIBits 
 Results:
 Method | x86 (32 bit)  | x64 (64 bit) |
 ------ | ------------- | ------------- |
-Simple | 135 FPS  | 123 FPS  |
-LoopUnroll | 147 FPS  | 116 FPS  |
-LoopUnrollPtr | 129 FPS | 160 FPS  |
+Simple | 118 FPS  | 123 FPS  |
+LoopUnroll | 122 FPS  | 116 FPS  |
+LoopUnrollPtr | 105 FPS | 160 FPS  |
 SSE2 | 374 FPS  | 432 FPS |
 
 For optimization purposes, the following directives are used:
