@@ -8,6 +8,8 @@ Also this is an example of outputting raw pixels using the WinApi StretchDIBits 
 
 [Precompiled Windows EXE (64 bit)](https://github.com/turborium/SSE2Sample/raw/main/SSE2Sample.exe)
 
+Powered by [Delphi](https://www.embarcadero.com/products/delphi) with [ObjectPascal](https://www.danysoft.com/estaticos/free/Libros%20en%20formato%20GRATUITO/ObjectPascalHandbook_AlexandriaVersion.pdf) [(RU)](https://lp.embarcadero.com/RU-ObjectPascalEbook), get free Delphi 11 Community Edition [here](https://www.embarcadero.com/products/delphi/starter).
+
 ## Results
 Method | x86 (32 bit)  | x64 (64 bit) |
 ------ | ------------- | ------------- |
