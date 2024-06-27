@@ -1,0 +1,53 @@
+------------
+--- RUST ---
+------------
+
+use std::ptr;
+
+#[no_mangle]
+unsafe fn fade_16_bytes(source_vector: *mut u8, fade_vector: *const u8) {
+    let mut src = source_vector;
+    let mut fade = fade_vector;
+
+    for _ in 0..16 {
+        if *src > *fade {
+            *src -= *fade;
+        } else {
+            *src = 0;
+        }
+        src = src.offset(1);
+        fade = fade.offset(1);
+    }
+}
+
+------------
+---  Go  ---
+------------
+
+func Fade16Bytes(sourceVector, fadeVector []byte) {
+	for i := 0; i < 16; i++ {
+		if sourceVector[i] > fadeVector[i] {
+			sourceVector[i] -= fadeVector[i]
+		} else {
+			sourceVector[i] = 0
+		}
+	}
+}
+
+------------
+--- C++  ---
+------------
+
+#include <emmintrin.h>  // SSE2 intrinsics
+
+void Fade16Bytes(void* SourceVector, void* FadeVector) {
+    // Загрузка данных из SourceVector и FadeVector в регистры xmm
+    __m128i source = _mm_loadu_si128((__m128i*)SourceVector);
+    __m128i fade = _mm_loadu_si128((__m128i*)FadeVector);
+
+    // Вычитание с насыщением (saturated subtraction)
+    __m128i result = _mm_subs_epu8(source, fade);
+
+    // Запись данных обратно в SourceVector
+    _mm_storeu_si128((__m128i*)SourceVector, result);
+}
