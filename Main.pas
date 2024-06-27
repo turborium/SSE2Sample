@@ -4,13 +4,14 @@ unit Main;
 {$POINTERMATH ON} // разрешаем работу с указателями
 {$OVERFLOWCHECKS OFF} // отключаем проверку переполнения чисел
 {$RANGECHECKS OFF} // отключаем проверку диапазонов
+{$SCOPEDENUMS ON}// включаем скоуп для енамов
 
 interface
 
 uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes,
-  System.Math, Vcl.Graphics, Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls,
-  Vcl.ExtCtrls;
+  System.Math, System.Rtti,
+  Vcl.Graphics, Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, Vcl.ExtCtrls;
 
 type
   TFormMain = class(TForm)
@@ -38,7 +39,7 @@ implementation
 {$R *.dfm}
 
 type
-  TFadeMethod = (fmSimple, fmLoopUnroll, fmLoopUnrollPtr, fmSSE2);
+  TFadeMethod = (Simple, LoopUnroll, LoopUnrollPtr, SSE2);
 
 procedure FadeBufferSimple(Data: PByte; Count: Integer; Level: Byte);
 var
@@ -158,7 +159,7 @@ begin
     Data[I] := Max(0, Data[I] - Level);
 end;
 
-procedure DrawEffect(Pixels: Pointer; Width, Height: Integer; var Time: Double; FadeMetod: TFadeMethod);
+procedure DrawEffect(Pixels: Pointer; Width, Height: Integer; var Time: Double; FadeMethod: TFadeMethod);
 const
   SprayCount = 100;
   PointInSprayCount = 20;
@@ -172,11 +173,13 @@ var
   T: Double;
 begin
   // фейдим фон
-  case FadeMetod of
-    fmSimple: FadeBufferSimple(Pixels, Width * Height * 4, FadeLevel);
-    fmLoopUnroll: FadeBufferLoopUnroll(Pixels, Width * Height * 4, FadeLevel);
-    fmLoopUnrollPtr: FadeBufferLoopUnrollPtr(Pixels, Width * Height * 4, FadeLevel);
-    fmSSE2: FadeBufferSSE2(Pixels, Width * Height * 4, FadeLevel);
+  case FadeMethod of
+    TFadeMethod.Simple: FadeBufferSimple(Pixels, Width * Height * 4, FadeLevel);
+    TFadeMethod.LoopUnroll: FadeBufferLoopUnroll(Pixels, Width * Height * 4, FadeLevel);
+    TFadeMethod.LoopUnrollPtr: FadeBufferLoopUnrollPtr(Pixels, Width * Height * 4, FadeLevel);
+    TFadeMethod.SSE2: FadeBufferSSE2(Pixels, Width * Height * 4, FadeLevel);
+    else
+      raise EAbstractError.Create('Bad FadeMethod');
   end;
 
   // рисуем спрей
@@ -206,11 +209,25 @@ end;
 { TFormMain }
 
 procedure TFormMain.FormCreate(Sender: TObject);
+var
+  RttiType: TRttiType;
+  RttiContext: TRttiContext;
 begin
   // делаем контрол непрозрачным (VCL не будет очищать фон)
   PaintBox.ControlStyle := PaintBox.ControlStyle + [csOpaque];
   // назначаем обработчик "простоя" приложения
   Application.OnIdle := ApplicationIdle;
+
+  // заполнение методов через rtti
+  RttiContext := TRttiContext.Create();
+  try
+    RttiType := RttiContext.GetType(TypeInfo(TFadeMethod));
+    RadioGroupFadeMethod.Items.AddStrings(TRttiEnumerationType(RttiType).GetNames());
+  finally
+    RttiContext.Free();
+  end;
+  RadioGroupFadeMethod.ItemIndex := RadioGroupFadeMethod.Items.Count - 1;
+  RadioGroupFadeMethod.Columns := RadioGroupFadeMethod.Items.Count;
 end;
 
 procedure TFormMain.ApplicationIdle(Sender: TObject; var Done: Boolean);

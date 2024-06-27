@@ -5,7 +5,7 @@
         <Config Condition="'$(Config)'==''">Release</Config>
         <FrameworkType>VCL</FrameworkType>
         <MainSource>SSE2Sample.dpr</MainSource>
-        <Platform Condition="'$(Platform)'==''">Win32</Platform>
+        <Platform Condition="'$(Platform)'==''">Win64</Platform>
         <ProjectGuid>{AE4F2E41-094D-456B-9A4D-B6CB10B06FAE}</ProjectGuid>
         <ProjectName Condition="'$(ProjectName)'==''">SSE2Sample</ProjectName>
         <ProjectVersion>20.1</ProjectVersion>

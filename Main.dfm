@@ -33,12 +33,6 @@ object FormMain: TFormMain
     Align = alTop
     Caption = 'Fade Method'
     Columns = 4
-    ItemIndex = 3
-    Items.Strings = (
-      'Simple'
-      'LoopUnroll'
-      'LoopUnrollPtr'
-      'SSE2')
     TabOrder = 0
     OnClick = RadioGroupFadeMethodClick
     ExplicitWidth = 172
