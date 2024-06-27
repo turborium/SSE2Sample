@@ -6,7 +6,7 @@ Example of using sse2
 Demo shows the difference between fade code versions and optimizations.  
 Also this is an example of outputting raw pixels using the WinApi StretchDIBits function.  
 
-Results:
+## Results
 Method | x86 (32 bit)  | x64 (64 bit) |
 ------ | ------------- | ------------- |
 Simple | 118 FPS  | 123 FPS  |
