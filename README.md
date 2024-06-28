@@ -120,8 +120,6 @@ end;
 ```Pascal
 procedure Fade16BytesSSE2(SourceVector, FadeVector: Pointer);
 asm
-  {$IFDEF WIN64}.NOFRAME{$ENDIF}
-
   // Загрузка данных из SourceVector, FadeVector в xmm0 и xmm1
   movdqu xmm0, dqword ptr [SourceVector]
   movdqu xmm1, dqword ptr [FadeVector]
