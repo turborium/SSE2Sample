@@ -152,3 +152,163 @@ begin
     Data[I] := Max(0, Data[I] - Level);
 end;
 ```
+
+---
+
+## Вариации эффекта от ChatGPT 4o:
+
+### Первая вариация
+> Вот обновленный код для процедуры DrawEffect, который включает более утонченные цветовые переходы и более плавные формы для улучшения визуального эффекта.
+> Изменения включают:
+> - Уменьшенное количество спреев (SprayCount) и точек в каждом спрее (PointInSprayCount).
+> - Плавные цветовые переходы, используя тригонометрические функции для базового цвета.
+> - Легкие вариации основного цвета для каждой точки, чтобы избежать резких цветовых переходов.
+```Pascal
+procedure DrawEffect(Pixels: Pointer; Width, Height: Integer; var Time: Double; FadeMethod: TFadeMethod);
+const
+  SprayCount = 50;  // Уменьшил количество спреев для более плавного эффекта
+  PointInSprayCount = 15;  // Уменьшил количество точек в одном спрее для большей детализации
+  SprayDeltaTime = 0.05;  // Увеличил временной промежуток между спреями для плавности
+  DeltaTime = 0.03;
+  FadeLevel = 2;
+var
+  I, J: Integer;
+  X, Y: Double;
+  ScreenX, ScreenY: Integer;
+  T: Double;
+  BaseColor: TColor;
+  R, G, B: Byte;
+begin
+  case FadeMethod of
+    TFadeMethod.Simple: FadeBufferSimple(Pixels, Width * Height * 4, FadeLevel);
+    TFadeMethod.LoopUnroll: FadeBufferLoopUnroll(Pixels, Width * Height * 4, FadeLevel);
+    TFadeMethod.LoopUnrollPtr: FadeBufferLoopUnrollPtr(Pixels, Width * Height * 4, FadeLevel);
+    TFadeMethod.SSE2: FadeBufferSSE2(Pixels, Width * Height * 4, FadeLevel);
+    else raise EAbstractError.Create('Bad FadeMethod');
+  end;
+
+  T := Time;
+  for I := 0 to SprayCount - 1 do
+  begin
+    X := 0.2 * (Cos(T) + Sin(T * 0.342 + 0.33) + Sin(T * 3.523)) * Width + 0.5 * Width;
+    Y := 0.2 * (Sin(T * 0.643) + Cos(T * 0.124 + 0.15) + Sin(T * 2.423)) * Height + 0.5 * Height;
+    ScreenX := Trunc(X);
+    ScreenY := Trunc(Y);
+
+    // Основной цвет спрея
+    BaseColor := RGB(128 + Round(127 * Sin(T)), 128 + Round(127 * Sin(T * 1.3)), 128 + Round(127 * Sin(T * 1.7)));
+
+    for J := 0 to PointInSprayCount - 1 do
+    begin
+      ScreenX := ScreenX + (Random(21 + J) - 10 - J div 2);
+      ScreenY := ScreenY + (Random(21 + J) - 10 - J div 2);
+      if (ScreenX < 0) or (ScreenX >= Width) or (ScreenY < 0) or (ScreenY >= Height) then
+        continue;
+
+      // Изменение оттенка основного цвета
+      R := GetRValue(BaseColor) + Random(51) - 25;
+      G := GetGValue(BaseColor) + Random(51) - 25;
+      B := GetBValue(BaseColor) + Random(51) - 25;
+
+      PUInt32(Pixels)[ScreenX + ScreenY * Width] := RGB(R, G, B);
+    end;
+    T := T + SprayDeltaTime;
+  end;
+
+  Time := Time + DeltaTime;
+end;
+```
+
+### Вторая вариация
+> Вот еще несколько идей для улучшения визуального эффекта:  
+>   Добавление градиентных переходов:  
+>   Введение градиентных переходов между цветами для создания более гладкого и плавного эффекта.
+> 
+>   Использование более сложных функций для координат:  
+>   Применение более сложных функций для вычисления координат точек, чтобы создать интересные узоры и формы.
+>
+>   Добавление альфа-канала:  
+>   Использование альфа-канала для создания эффекта прозрачности.
+>
+>   Изменение размера точек:  
+>   Варьирование размеров точек для создания эффекта глубины.
+```Pascal
+procedure BlendPixel(Pixels: PByte; X, Y, Width: Integer; R, G, B, A: Byte);
+var
+  Index: Integer;
+  DestR, DestG, DestB: Byte;
+begin
+  if (X < 0) or (X >= Width) or (Y < 0) then Exit;
+  Index := (X + Y * Width) * 4;
+
+  DestB := Pixels[Index];
+  DestG := Pixels[Index + 1];
+  DestR := Pixels[Index + 2];
+
+  Pixels[Index] := (B * A + DestB * (255 - A)) div 255;
+  Pixels[Index + 1] := (G * A + DestG * (255 - A)) div 255;
+  Pixels[Index + 2] := (R * A + DestR * (255 - A)) div 255;
+end;
+
+procedure DrawEffect(Pixels: Pointer; Width, Height: Integer; var Time: Double; FadeMethod: TFadeMethod);
+const
+  SprayCount = 50;
+  PointInSprayCount = 15;
+  SprayDeltaTime = 0.05;
+  DeltaTime = 0.03;
+  FadeLevel = 2;
+var
+  I, J: Integer;
+  X, Y: Double;
+  ScreenX, ScreenY: Integer;
+  T: Double;
+  BaseColor: TColor;
+  R, G, B, A: Byte;
+  Size: Integer;
+begin
+  case FadeMethod of
+    TFadeMethod.Simple: FadeBufferSimple(Pixels, Width * Height * 4, FadeLevel);
+    TFadeMethod.LoopUnroll: FadeBufferLoopUnroll(Pixels, Width * Height * 4, FadeLevel);
+    TFadeMethod.LoopUnrollPtr: FadeBufferLoopUnrollPtr(Pixels, Width * Height * 4, FadeLevel);
+    TFadeMethod.SSE2: FadeBufferSSE2(Pixels, Width * Height * 4, FadeLevel);
+    else raise EAbstractError.Create('Bad FadeMethod');
+  end;
+
+  T := Time;
+  for I := 0 to SprayCount - 1 do
+  begin
+    X := 0.2 * (Cos(T) + Sin(T * 0.342 + 0.33) + Sin(T * 3.523)) * Width + 0.5 * Width;
+    Y := 0.2 * (Sin(T * 0.643) + Cos(T * 0.124 + 0.15) + Sin(T * 2.423)) * Height + 0.5 * Height;
+    ScreenX := Trunc(X);
+    ScreenY := Trunc(Y);
+
+    // Основной цвет спрея с градиентом
+    BaseColor := RGB(128 + Round(127 * Sin(T)), 128 + Round(127 * Sin(T * 1.3)), 128 + Round(127 * Sin(T * 1.7)));
+
+    for J := 0 to PointInSprayCount - 1 do
+    begin
+      ScreenX := ScreenX + (Random(21 + J) - 10 - J div 2);
+      ScreenY := ScreenY + (Random(21 + J) - 10 - J div 2);
+      if (ScreenX < 0) or (ScreenX >= Width) or (ScreenY < 0) or (ScreenY >= Height) then
+        continue;
+
+      // Изменение оттенка основного цвета с градиентом
+      R := GetRValue(BaseColor) + Random(51) - 25;
+      G := GetGValue(BaseColor) + Random(51) - 25;
+      B := GetBValue(BaseColor) + Random(51) - 25;
+      A := 255 - Round(255 * (J / PointInSprayCount));  // Альфа-канал
+
+      Size := Random(3) + 1;  // Изменение размера точек
+
+      // Рисуем точку с учетом альфа-канала и размера
+      for var DX := -Size to Size do
+        for var DY := -Size to Size do
+          if (ScreenX + DX >= 0) and (ScreenX + DX < Width) and (ScreenY + DY >= 0) and (ScreenY + DY < Height) then
+            BlendPixel(Pixels, ScreenX + DX, ScreenY + DY, Width, R, G, B, A);
+    end;
+    T := T + SprayDeltaTime;
+  end;
+
+  Time := Time + DeltaTime;
+end;
+```
