@@ -123,10 +123,15 @@ begin
   end;
 end;
 
+// 128 bit = 16 bytes
+// xmm = [Byte|Byte|Byte|Byte|Byte|Byte|Byte|Byte|Byte|Byte|Byte|Byte|Byte|Byte|Byte|Byte]
+
+// psubusb:
+// xmm0 = [Byte|Byte|Byte|Byte|Byte|Byte|Byte|Byte|Byte|Byte|Byte|Byte|Byte|Byte|Byte|Byte]
+//          -    -    -    -    -    -    -    -    -    -    -    -    -    -    -    -
+// xmm1 = [Byte|Byte|Byte|Byte|Byte|Byte|Byte|Byte|Byte|Byte|Byte|Byte|Byte|Byte|Byte|Byte]
 procedure Fade16BytesSSE2(SourceVector, FadeVector: Pointer);
 asm
-  {$IFDEF WIN64}.NOFRAME{$ENDIF}
-
   // Загрузка данных из SourceVector, FadeVector в xmm0 и xmm1
   movdqu xmm0, dqword ptr [SourceVector]
   movdqu xmm1, dqword ptr [FadeVector]
